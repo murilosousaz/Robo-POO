@@ -40,7 +40,6 @@ public class Tabuleiro {
         this.alimentoY = y;
     }
 
-    // Método solicitado pelo Controller para atualizar o estado do jogo
     public void atualizar(Robo r1, Robo r2, int fx, int fy) {
         this.robos.clear();
         if (r1 != null) this.robos.add(r1);
@@ -49,28 +48,22 @@ public class Tabuleiro {
         avancarTurno();
     }
 
-    // Método essencial para a TabuleiroView desenhar o jogo
     public String[][] getMatriz() {
         String[][] matriz = new String[TAMANHO][TAMANHO];
-
-        // Preenche com vazio
         for (int i = 0; i < TAMANHO; i++) {
             for (int j = 0; j < TAMANHO; j++) {
                 matriz[i][j] = ".";
             }
         }
 
-        // Coloca o Alimento
         if (alimentoX != -1 && alimentoY != -1) {
             matriz[alimentoX][alimentoY] = "A";
         }
 
-        // Coloca os Obstáculos
         for (Obstaculo o : obstaculos) {
             matriz[o.getEixoX()][o.getEixoY()] = (o instanceof Bomba) ? "B" : "R";
         }
 
-        // Coloca os Robôs (por último para ficarem "por cima")
         for (Robo r : robos) {
             if (r.getEixoX() != -1 && r.getEixoY() != -1) {
                 matriz[r.getEixoX()][r.getEixoY()] = "R";
