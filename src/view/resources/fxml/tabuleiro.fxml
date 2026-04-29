@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+═══════════════════════════════════════════════════════════
+ tabuleiro.fxml — Tela principal do jogo
+ Controller: controller.JogoController
+
+ LAYOUT: BorderPane divide a tela em 5 regiões:
+   top    → cabeçalho (título, turno, modo)
+   center → tabuleiro visual (GridPane)
+   right  → painel lateral (controles, status)
+   bottom → barra de rodapé (botão voltar)
+   left   → vazio (não usado)
+
+ CONCEITO BorderPane:
+ É o layout mais comum para aplicações com janela
+ principal, pois mapeia naturalmente para o padrão
+ cabeçalho / conteúdo / barra lateral / rodapé.
+═══════════════════════════════════════════════════════════
+-->
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane
+    xmlns="http://javafx.com/javafx"
+    xmlns:fx="http://javafx.com/fxml"
+    fx:controller="controller.JogoController"
+    prefWidth="760"
+    prefHeight="580"
+    style="-fx-background-color: #0A0A18;">
+
+    <!-- ══════════════════════════════════════════════════
+         TOPO — cabeçalho com identidade e estado do jogo
+    ══════════════════════════════════════════════════ -->
+    <top>
+        <VBox style="-fx-background-color: #0D0D22;
+                     -fx-border-color: #1A1A40;
+                     -fx-border-width: 0 0 1 0;">
+
+            <!-- Faixa de acento no topo -->
+            <Rectangle width="760" height="2"
+                style="-fx-fill: linear-gradient(to right, #0D0D22, #4A90D9, #7B4FD9, #0D0D22);"/>
+
+            <HBox alignment="CENTER_LEFT" spacing="0"
+                  style="-fx-padding: 12 20 12 20;">
+
+                <!-- Título -->
+                <Label text="ROBÔ GAME"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 18px;
+                              -fx-font-weight: bold;
+                              -fx-text-fill: #D0D0F0;
+                              -fx-letter-spacing: 5px;"/>
+
+                <!-- Separador visual -->
+                <Label text="  //  "
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 14px;
+                              -fx-text-fill: #2A2A55;"/>
+
+                <!-- Modo atual — atualizado pelo Controller -->
+                <Label fx:id="labelModo"
+                       text="—"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 12px;
+                              -fx-text-fill: #5A8ABF;"/>
+
+                <!-- Empurra o turno para a direita -->
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Turno — atualizado automaticamente pelo Observer -->
+                <Label text="TURNO  "
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 10px;
+                              -fx-text-fill: #2A2A55;"/>
+                <Label fx:id="labelTurno"
+                       text="000"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 16px;
+                              -fx-font-weight: bold;
+                              -fx-text-fill: #4A90D9;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ══════════════════════════════════════════════════
+         CENTRO — o tabuleiro visual
+         O GridPane é preenchido pelo TabuleiroView.java.
+         Deixamos vazio aqui — a View cuida do conteúdo.
+    ══════════════════════════════════════════════════ -->
+    <center>
+        <GridPane
+            fx:id="gridTabuleiro"
+            alignment="CENTER"
+            hgap="4"
+            vgap="4"
+            style="-fx-background-color: #0A0A18;
+                   -fx-padding: 24;"/>
+    </center>
+
+    <!-- ══════════════════════════════════════════════════
+         DIREITA — painel de controles
+    ══════════════════════════════════════════════════ -->
+    <right>
+        <VBox
+            spacing="0"
+            alignment="TOP_CENTER"
+            style="-fx-background-color: #0D0D22;
+                   -fx-border-color: #1A1A40;
+                   -fx-border-width: 0 0 0 1;
+                   -fx-min-width: 170px;
+                   -fx-max-width: 170px;">
+
+            <!-- ── Seção: Movimento ── -->
+            <!--
+                Os botões de direção ficam desabilitados
+                (disable="true") por padrão. O JogoController
+                os habilita apenas no Modo Simples via
+                habilitarBotoesMovimento(true).
+            -->
+            <VBox spacing="8" style="-fx-padding: 20 16 16 16;">
+
+                <Label text="MOVIMENTO"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 9px;
+                              -fx-text-fill: #2A2A55;
+                              -fx-letter-spacing: 2px;"/>
+
+                <!-- Cima -->
+                <Button text="▲  CIMA"
+                        fx:id="btnCima"
+                        maxWidth="Infinity"
+                        onAction="#onMoverCima"
+                        disable="true"
+                        style="-fx-background-color: #111130;
+                               -fx-border-color: #2A2A55;
+                               -fx-border-width: 1;
+                               -fx-border-radius: 4;
+                               -fx-background-radius: 4;
+                               -fx-text-fill: #5A5A9A;
+                               -fx-font-family: 'Courier New';
+                               -fx-font-size: 12px;
+                               -fx-cursor: hand;
+                               -fx-padding: 8 12;"/>
+
+                <!-- Linha: Esquerda / Baixo / Direita -->
+                <HBox spacing="6" alignment="CENTER">
+                    <Button text="◄"
+                            fx:id="btnEsquerda"
+                            onAction="#onMoverEsquerda"
+                            disable="true"
+                            prefWidth="42"
+                            style="-fx-background-color: #111130;
+                                   -fx-border-color: #2A2A55;
+                                   -fx-border-width: 1;
+                                   -fx-border-radius: 4;
+                                   -fx-background-radius: 4;
+                                   -fx-text-fill: #5A5A9A;
+                                   -fx-font-family: 'Courier New';
+                                   -fx-font-size: 14px;
+                                   -fx-cursor: hand;
+                                   -fx-padding: 8 6;"/>
+                    <Button text="▼"
+                            fx:id="btnBaixo"
+                            onAction="#onMoverBaixo"
+                            disable="true"
+                            prefWidth="42"
+                            style="-fx-background-color: #111130;
+                                   -fx-border-color: #2A2A55;
+                                   -fx-border-width: 1;
+                                   -fx-border-radius: 4;
+                                   -fx-background-radius: 4;
+                                   -fx-text-fill: #5A5A9A;
+                                   -fx-font-family: 'Courier New';
+                                   -fx-font-size: 14px;
+                                   -fx-cursor: hand;
+                                   -fx-padding: 8 6;"/>
+                    <Button text="►"
+                            fx:id="btnDireita"
+                            onAction="#onMoverDireita"
+                            disable="true"
+                            prefWidth="42"
+                            style="-fx-background-color: #111130;
+                                   -fx-border-color: #2A2A55;
+                                   -fx-border-width: 1;
+                                   -fx-border-radius: 4;
+                                   -fx-background-radius: 4;
+                                   -fx-text-fill: #5A5A9A;
+                                   -fx-font-family: 'Courier New';
+                                   -fx-font-size: 14px;
+                                   -fx-cursor: hand;
+                                   -fx-padding: 8 6;"/>
+                </HBox>
+            </VBox>
+
+            <Separator style="-fx-background-color: #1A1A3A;"/>
+
+            <!-- ── Seção: Status ── -->
+            <!--
+                labelStatus é atualizado pelo Controller
+                a cada evento: movimento, colisão, vitória.
+                wrapText="true" permite quebrar linha se
+                a mensagem for longa.
+            -->
+            <VBox spacing="8" style="-fx-padding: 16 16 16 16;">
+                <Label text="STATUS"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 9px;
+                              -fx-text-fill: #2A2A55;
+                              -fx-letter-spacing: 2px;"/>
+                <Label fx:id="labelStatus"
+                       text="Selecione um modo no menu."
+                       wrapText="true"
+                       maxWidth="138"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 11px;
+                              -fx-text-fill: #5A6A8A;
+                              -fx-line-spacing: 2px;"/>
+            </VBox>
+
+            <!-- Empurra o botão Voltar para o fundo -->
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <Separator style="-fx-background-color: #1A1A3A;"/>
+
+            <!-- ── Botão Voltar ── -->
+            <!--
+                onAction="#onVoltarMenu" → chama o método
+                onVoltarMenu(ActionEvent) no JogoController,
+                que para o Timeline e carrega o menu.fxml.
+            -->
+            <VBox style="-fx-padding: 12 16 16 16;">
+                <Button text="← VOLTAR AO MENU"
+                        maxWidth="Infinity"
+                        onAction="#onVoltarMenu"
+                        style="-fx-background-color: #1A0A0A;
+                               -fx-border-color: #5A1A1A;
+                               -fx-border-width: 1;
+                               -fx-border-radius: 4;
+                               -fx-background-radius: 4;
+                               -fx-text-fill: #8A3A3A;
+                               -fx-font-family: 'Courier New';
+                               -fx-font-size: 11px;
+                               -fx-cursor: hand;
+                               -fx-padding: 10 12;"/>
+            </VBox>
+
+        </VBox>
+    </right>
+
+    <!-- ══════════════════════════════════════════════════
+         RODAPÉ — barra de legenda
+    ══════════════════════════════════════════════════ -->
+    <bottom>
+        <HBox
+            alignment="CENTER_LEFT"
+            spacing="20"
+            style="-fx-background-color: #080814;
+                   -fx-border-color: #1A1A40;
+                   -fx-border-width: 1 0 0 0;
+                   -fx-padding: 6 20;">
+
+            <!-- Legenda das cores dos elementos -->
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Rectangle width="10" height="10"
+                    style="-fx-fill: #00FF87; -fx-arc-width: 3; -fx-arc-height: 3;"/>
+                <Label text="alimento"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 10px;
+                              -fx-text-fill: #2A4A3A;"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Rectangle width="10" height="10"
+                    style="-fx-fill: #4A90D9; -fx-arc-width: 3; -fx-arc-height: 3;"/>
+                <Label text="robô"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 10px;
+                              -fx-text-fill: #2A3A4A;"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Rectangle width="10" height="10"
+                    style="-fx-fill: #FFD54F; -fx-arc-width: 3; -fx-arc-height: 3;"/>
+                <Label text="inteligente"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 10px;
+                              -fx-text-fill: #3A3A2A;"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Rectangle width="10" height="10"
+                    style="-fx-fill: #FF4444; -fx-arc-width: 3; -fx-arc-height: 3;"/>
+                <Label text="bomba"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 10px;
+                              -fx-text-fill: #4A2A2A;"/>
+            </HBox>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Rectangle width="10" height="10"
+                    style="-fx-fill: #8B7355; -fx-arc-width: 3; -fx-arc-height: 3;"/>
+                <Label text="rocha"
+                       style="-fx-font-family: 'Courier New';
+                              -fx-font-size: 10px;
+                              -fx-text-fill: #3A3A2A;"/>
+            </HBox>
+
+        </HBox>
+    </bottom>
+
+</BorderPane>

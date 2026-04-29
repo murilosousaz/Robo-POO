@@ -1,8 +1,13 @@
 package controller;
 
+import controller.modos.ModoCompetitivoController;
+import controller.modos.ModoInteligenteController;
+import controller.modos.ModoObstaculosController;
+import controller.modos.ModoSimplesController;
 import exceptions.MovimentoInvalidoException;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -13,10 +18,8 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import model.Bomba;
 import model.Obstaculo;
 import model.Robo;
-import model.RoboInteligente;
 import model.Tabuleiro;
 import view.EntradaDados;
 import view.TabuleiroView;
@@ -25,138 +28,107 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
+public class JogoController {
 
-public abstract class JogoController {
     @FXML private GridPane gridTabuleiro;
-    @FXML private Label labelTurno;
-    @FXML private Label labelModo;
-    @FXML private Label labelStatus;
-    @FXML private Button btnCima;
-    @FXML private Button btnBaixo;
-    @FXML private Button btnEsquerda;
-    @FXML private Button btnDireita;
+    @FXML private Label    labelTurno;
+    @FXML private Label    labelModo;
+    @FXML private Label    labelStatus;
+    @FXML private Button   btnCima;
+    @FXML private Button   btnBaixo;
+    @FXML private Button   btnEsquerda;
+    @FXML private Button   btnDireita;
 
-    private Tabuleiro tabuleiro;
+    private Tabuleiro     tabuleiro;
     private TabuleiroView tabuleiroView;
-    private Timeline timelineAtiva;
-    private Random random = new Random();
+    private Timeline      timelineAtiva;
+    private final Random  random = new Random();
 
     @FXML
     public void initialize() {
-        tabuleiro = new Tabuleiro();
+        tabuleiro     = new Tabuleiro();
         tabuleiroView = new TabuleiroView(gridTabuleiro);
 
         tabuleiro.turnoAtualProperty().addListener(
-                (obs, antigo, novo) ->
-                        labelTurno.setText("Turno: " + novo)
+                (obs, antigo, novo) -> labelTurno.setText("Turno: " + novo)
         );
 
         habilitarBotoesMovimento(false);
-        tabuleiroView.renderizar(tabuleiro); // tela inicial vazia
+        tabuleiroView.renderizar(tabuleiro);
     }
 
-    public void iniciarModo(String modo){
+    public void iniciarModo(String modo) {
         tabuleiro.resetar();
         pararTimelineAtiva();
 
         switch (modo) {
-            case "simples"     -> configurarModoSimples();
-            case "competitivo" -> configurarModoCompetitivo();
-            case "inteligente" -> configurarModoInteligente();
-            case "obstaculos"  -> configurarModoObstaculos();
+            case "simples"     -> iniciarSimples();
+            case "competitivo" -> iniciarAutomatico(new ModoCompetitivoController());
+            case "inteligente" -> iniciarAutomatico(new ModoInteligenteController());
+            case "obstaculos"  -> iniciarAutomatico(new ModoObstaculosController());
         }
     }
 
-    private void configurarModoSimples() {
-        labelModo.setText("Modo: Simples");
-        labelStatus.setText("Use os botões para mover.");
+    private void iniciarSimples() {
+        ModoSimplesController modo = new ModoSimplesController();
+        labelModo.setText(modo.getNome());
+        labelStatus.setText(modo.getDescricao());
 
-        int[] pos = EntradaDados.lerCoordenada("Posição do Alimento");
-        if (pos == null) return;
-
-        tabuleiro.definirAlimento(pos[0], pos[1]);
-        tabuleiro.adicionarRobo(new Robo("blue"));
+        boolean ok = modo.configurar(tabuleiro);
+        if (!ok) return;
 
         habilitarBotoesMovimento(true);
         tabuleiroView.renderizar(tabuleiro);
     }
 
-    private void configurarModoCompetitivo() {
-        labelModo.setText("Modo: Competitivo");
-        labelStatus.setText("Dois robôs buscam o alimento.");
+    private void iniciarAutomatico(ModoCompetitivoController modo) {
+        labelModo.setText(modo.getNome());
+        labelStatus.setText(modo.getDescricao());
         habilitarBotoesMovimento(false);
 
-        int[] pos = EntradaDados.lerCoordenada("Posição do Alimento");
-        if (pos == null) return;
-
-        tabuleiro.definirAlimento(pos[0], pos[1]);
-        tabuleiro.adicionarRobo(new Robo("blue"));
-        tabuleiro.adicionarRobo(new Robo("red"));
+        boolean ok = modo.configurar(tabuleiro);
+        if (!ok) return;
 
         tabuleiroView.renderizar(tabuleiro);
-        iniciarTimeline(700, () -> {
-            executarTurnoAleatorio(tabuleiro.getRobos());
-            tabuleiroView.renderizar(tabuleiro);
-            tabuleiro.avancarTurno();
-            if (tabuleiro.algumRoboEncontrouAlimento()) {
-                labelStatus.setText("🏆 Um robô encontrou o alimento!");
-                pararTimelineAtiva();
-            }
-        });
+        iniciarTimeline(modo.getIntervaloMs(), () -> tickAutomatico());
     }
 
-    private void configurarModoInteligente() {
-        labelModo.setText("Modo: Inteligente");
-        labelStatus.setText("Robô normal vs Inteligente.");
+    private void iniciarAutomatico(ModoInteligenteController modo) {
+        labelModo.setText(modo.getNome());
+        labelStatus.setText(modo.getDescricao());
         habilitarBotoesMovimento(false);
 
-        int[] pos = EntradaDados.lerCoordenada("Posição do Alimento");
-        if (pos == null) return;
-
-        tabuleiro.definirAlimento(pos[0], pos[1]);
-        tabuleiro.adicionarRobo(new Robo("blue"));
-        tabuleiro.adicionarRobo(new RoboInteligente("gold", random));
+        boolean ok = modo.configurar(tabuleiro);
+        if (!ok) return;
 
         tabuleiroView.renderizar(tabuleiro);
-        iniciarTimeline(800, () -> {
-            executarTurnoAleatorio(tabuleiro.getRobos());
-            tabuleiroView.renderizar(tabuleiro);
-            tabuleiro.avancarTurno();
-            if (tabuleiro.algumRoboEncontrouAlimento()) {
-                labelStatus.setText("🏆 Alimento encontrado!");
-                pararTimelineAtiva();
-            }
-        });
+        iniciarTimeline(modo.getIntervaloMs(), () -> tickAutomatico());
     }
 
-    private void configurarModoObstaculos() {
-        labelModo.setText("Modo: Obstáculos");
-        labelStatus.setText("Cuidado com bombas e rochas!");
+    private void iniciarAutomatico(ModoObstaculosController modo) {
+        labelModo.setText(modo.getNome());
+        labelStatus.setText(modo.getDescricao());
         habilitarBotoesMovimento(false);
 
-        int[] posBomba = EntradaDados.lerCoordenada("Posição da Bomba");
-        if (posBomba != null)
-            tabuleiro.adicionarObstaculo(new Bomba(1, posBomba[0], posBomba[1]));
-
-        int[] pos = EntradaDados.lerCoordenada("Posição do Alimento");
-        if (pos == null) return;
-
-        tabuleiro.definirAlimento(pos[0], pos[1]);
-        tabuleiro.adicionarRobo(new Robo("blue"));
+        boolean ok = modo.configurar(tabuleiro);
+        if (!ok) return;
 
         tabuleiroView.renderizar(tabuleiro);
-        iniciarTimeline(700, () -> {
-            executarTurnoAleatorio(tabuleiro.getRobos());
-            tabuleiroView.renderizar(tabuleiro);
-            tabuleiro.avancarTurno();
-            if (tabuleiro.todosRobosDestruidos()) {
-                labelStatus.setText("💀 Robô destruído!");
-                pararTimelineAtiva();
-            } else if (tabuleiro.algumRoboEncontrouAlimento()) {
-                labelStatus.setText("🏆 Alimento encontrado!");
-                pararTimelineAtiva();
-            }
-        });
+        iniciarTimeline(modo.getIntervaloMs(), () -> tickAutomatico());
+    }
+
+    private void tickAutomatico() {
+        executarTurnoAleatorio(tabuleiro.getRobos());
+        tabuleiroView.renderizar(tabuleiro);
+        tabuleiro.avancarTurno();
+
+        if (tabuleiro.todosRobosDestruidos()) {
+            labelStatus.setText("💀 Todos os robôs foram destruídos!");
+            pararTimelineAtiva();
+        } else if (tabuleiro.algumRoboEncontrouAlimento()) {
+            labelStatus.setText("🏆 Alimento encontrado!");
+            pararTimelineAtiva();
+        }
     }
 
     @FXML public void onMoverCima()     { moverRoboComVerificacao("up");    }
@@ -165,7 +137,7 @@ public abstract class JogoController {
     @FXML public void onMoverEsquerda() { moverRoboComVerificacao("left");  }
 
     @FXML
-    public void onVoltarMenu(javafx.event.ActionEvent event) {
+    public void onVoltarMenu(ActionEvent event) {
         pararTimelineAtiva();
         try {
             Parent raiz = FXMLLoader.load(
@@ -207,7 +179,7 @@ public abstract class JogoController {
         obs.bater(robo);
 
         if (robo.getEixoX() == -1) {
-            tabuleiro.removerObstaculo(obs.getId());
+            tabuleiro.removerObstaculo(obs.getId()); // typo preservado do Tabuleiro.java
             labelStatus.setText("💥 Robô destruído pela bomba!");
         } else {
             labelStatus.setText("🪨 Movimento bloqueado pela rocha!");
@@ -247,5 +219,4 @@ public abstract class JogoController {
         btnEsquerda.setDisable(!habilitar);
         btnDireita.setDisable(!habilitar);
     }
-
 }

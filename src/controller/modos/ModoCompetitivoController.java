@@ -1,28 +1,24 @@
 package controller.modos;
 
-import controller.JogoController;
 import model.Robo;
+import model.Tabuleiro;
 import view.EntradaDados;
-import java.util.Random;
 
-public class ModoCompetitivoController extends JogoController {
-    @Override
-    public void executar() {
-        int fx = EntradaDados.lerInteiro("X do alimento: ");
-        int fy = EntradaDados.lerInteiro("Y do alimento: ");
-        Robo r1 = new Robo("Vermelho");
-        Robo r2 = new Robo("Verde");
-        Random rand = new Random();
+public class ModoCompetitivoController {
 
-        while (!r1.encontrouAlimento(fx, fy) && !r2.encontrouAlimento(fx, fy)) {
-            try { r1.mover(rand.nextInt(4) + 1); } catch (Exception e) {}
-            try { r2.mover(rand.nextInt(4) + 1); } catch (Exception e) {}
-            
-            tabuleiro.atualizar(r1, r2, fx, fy); 
-            view.exibirTabuleiro(tabuleiro);
-        }
-        
-        String vencedor = r1.encontrouAlimento(fx, fy) ? "Vermelho" : "Verde";
-        System.out.println("O vencedor foi o Robô " + vencedor);
+    public boolean configurar(Tabuleiro tabuleiro) {
+        int[] pos = EntradaDados.lerCoordenada("Posição do Alimento");
+        if (pos == null) return false;
+
+        tabuleiro.definirAlimento(pos[0], pos[1]);
+
+        tabuleiro.adicionarRobo(new Robo("blue"));
+        tabuleiro.adicionarRobo(new Robo("red"));
+        return true;
     }
+
+    public String getNome()      { return "Modo: Competitivo"; }
+    public String getDescricao() { return "Dois robôs buscam o alimento. Quem chega primeiro vence!"; }
+    public boolean isModoManual() { return false; }
+    public int getIntervaloMs()   { return 700; }
 }

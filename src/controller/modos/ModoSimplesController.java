@@ -1,28 +1,22 @@
 package controller.modos;
 
-import controller.JogoController;
 import model.Robo;
+import model.Tabuleiro;
 import view.EntradaDados;
-import exceptions.MovimentoInvalidoException;
 
-public class ModoSimplesController extends JogoController {
-    @Override
-    public void executar() {
-        int fx = EntradaDados.lerInteiro("X do alimento: ");
-        int fy = EntradaDados.lerInteiro("Y do alimento: ");
-        Robo robo = new Robo("Azul");
+public class ModoSimplesController {
 
-        while (!robo.encontrouAlimento(fx, fy)) {
-            tabuleiro.atualizar(robo, robo, fx, fy); // Mostra o estado atual
-            view.exibirTabuleiro(tabuleiro);
-            
-            String dir = EntradaDados.lerString("Mova o robô (up, down, left, right): ");
-            try {
-                robo.mover(dir);
-            } catch (MovimentoInvalidoException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        System.out.println("Parabéns! O robô azul achou a comida.");
+    public boolean configurar(Tabuleiro tabuleiro) {
+        int[] pos = EntradaDados.lerCoordenada("Posição do Alimento");
+        if (pos == null) return false; // usuário cancelou
+
+        tabuleiro.definirAlimento(pos[0], pos[1]);
+        tabuleiro.adicionarRobo(new Robo("blue"));
+        return true;
     }
+
+    public String getNome()      { return "Modo: Simples"; }
+    public String getDescricao() { return "Use os botões para mover o robô."; }
+
+    public boolean isModoManual() { return true; }
 }
