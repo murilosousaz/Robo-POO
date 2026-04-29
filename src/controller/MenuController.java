@@ -12,30 +12,15 @@ import java.io.IOException;
 
 public class MenuController {
 
-    @FXML
-    public void onModoSimples(ActionEvent event) {
-        navegarParaJogo(event, "simples");
-    }
+    @FXML public void onModoSimples(ActionEvent e)     { navegar(e, "simples");     }
+    @FXML public void onModoCompetitivo(ActionEvent e) { navegar(e, "competitivo"); }
+    @FXML public void onModoInteligente(ActionEvent e) { navegar(e, "inteligente"); }
+    @FXML public void onModoObstaculos(ActionEvent e)  { navegar(e, "obstaculos");  }
 
-    @FXML
-    public void onModoCompetitivo(ActionEvent event) {
-        navegarParaJogo(event, "competitivo");
-    }
-
-    @FXML
-    public void onModoInteligente(ActionEvent event) {
-        navegarParaJogo(event, "inteligente");
-    }
-
-    @FXML
-    public void onModoObstaculos(ActionEvent event) {
-        navegarParaJogo(event, "obstaculos");
-    }
-
-    private void navegarParaJogo(ActionEvent event, String modo) {
+    private void navegar(ActionEvent event, String modo) {
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/fxml/tabuleiro.fxml")
+                    app.App.ANCORA.getResource(app.App.FXML_TABULEIRO)
             );
             Parent raiz = loader.load();
 
@@ -43,15 +28,13 @@ public class MenuController {
             jogoController.iniciarModo(modo);
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-            // 4. Troca a cena
-            stage.setScene(new Scene(raiz));
+            stage.setScene(new Scene(raiz, 760, 580));
+            stage.setMinWidth(760);
+            stage.setMinHeight(580);
             stage.show();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
 }

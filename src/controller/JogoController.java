@@ -16,6 +16,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.Obstaculo;
@@ -74,8 +75,7 @@ public class JogoController {
         labelModo.setText(modo.getNome());
         labelStatus.setText(modo.getDescricao());
 
-        boolean ok = modo.configurar(tabuleiro);
-        if (!ok) return;
+        if (!modo.configurar(tabuleiro)) return;
 
         habilitarBotoesMovimento(true);
         tabuleiroView.renderizar(tabuleiro);
@@ -85,36 +85,27 @@ public class JogoController {
         labelModo.setText(modo.getNome());
         labelStatus.setText(modo.getDescricao());
         habilitarBotoesMovimento(false);
-
-        boolean ok = modo.configurar(tabuleiro);
-        if (!ok) return;
-
+        if (!modo.configurar(tabuleiro)) return;
         tabuleiroView.renderizar(tabuleiro);
-        iniciarTimeline(modo.getIntervaloMs(), () -> tickAutomatico());
+        iniciarTimeline(modo.getIntervaloMs(), this::tickAutomatico);
     }
 
     private void iniciarAutomatico(ModoInteligenteController modo) {
         labelModo.setText(modo.getNome());
         labelStatus.setText(modo.getDescricao());
         habilitarBotoesMovimento(false);
-
-        boolean ok = modo.configurar(tabuleiro);
-        if (!ok) return;
-
+        if (!modo.configurar(tabuleiro)) return;
         tabuleiroView.renderizar(tabuleiro);
-        iniciarTimeline(modo.getIntervaloMs(), () -> tickAutomatico());
+        iniciarTimeline(modo.getIntervaloMs(), this::tickAutomatico);
     }
 
     private void iniciarAutomatico(ModoObstaculosController modo) {
         labelModo.setText(modo.getNome());
         labelStatus.setText(modo.getDescricao());
         habilitarBotoesMovimento(false);
-
-        boolean ok = modo.configurar(tabuleiro);
-        if (!ok) return;
-
+        if (!modo.configurar(tabuleiro)) return;
         tabuleiroView.renderizar(tabuleiro);
-        iniciarTimeline(modo.getIntervaloMs(), () -> tickAutomatico());
+        iniciarTimeline(modo.getIntervaloMs(), this::tickAutomatico);
     }
 
     private void tickAutomatico() {
@@ -141,13 +132,40 @@ public class JogoController {
         pararTimelineAtiva();
         try {
             Parent raiz = FXMLLoader.load(
-                    getClass().getResource("/fxml/menu.fxml")
+                    app.App.ANCORA.getResource(app.App.FXML_MENU)
             );
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(raiz));
+            stage.setScene(new Scene(raiz, 400, 560));
+            stage.setMinWidth(400);
+            stage.setMinHeight(560);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public int[] abrirDialogoPosicao(String titulo) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    app.App.ANCORA.getResource(app.App.FXML_DIALOGO)
+            );
+            Parent raiz = loader.load();
+
+            DialogoPosicaoController ctrl = loader.getController();
+            ctrl.setTitulo(titulo);
+
+            Stage dialogo = new Stage();
+            dialogo.initModality(Modality.APPLICATION_MODAL);
+            dialogo.setTitle(titulo);
+            dialogo.setScene(new Scene(raiz));
+            dialogo.setResizable(false);
+            dialogo.showAndWait();
+
+            return ctrl.getResultado();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -179,7 +197,7 @@ public class JogoController {
         obs.bater(robo);
 
         if (robo.getEixoX() == -1) {
-            tabuleiro.removerObstaculo(obs.getId()); // typo preservado do Tabuleiro.java
+            tabuleiro.removerObstaculo(obs.getId());
             labelStatus.setText("💥 Robô destruído pela bomba!");
         } else {
             labelStatus.setText("🪨 Movimento bloqueado pela rocha!");
@@ -194,6 +212,7 @@ public class JogoController {
                 robo.mover(direcoes[random.nextInt(4)]);
                 verificarObstaculoNaPosicao(robo);
             } catch (MovimentoInvalidoException e) {
+                // tenta direção diferente no próximo turno
             }
         }
     }

@@ -7,26 +7,22 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class App extends Application {
+    static final String FXML_MENU      = "resources/fxml/menu.fxml";
+    static final String FXML_TABULEIRO = "resources/fxml/tabuleiro.fxml";
+    static final String FXML_DIALOGO   = "resources/fxml/dialogo-posicao.fxml";
+
+    static final Class<?> ANCORA = view.TabuleiroView.class;
 
     @Override
     public void start(Stage stage) throws Exception {
-
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/fxml/menu.fxml")
-        );
-        Parent raiz = loader.load();
+        Parent raiz = FXMLLoader.load(ANCORA.getResource(FXML_MENU));
 
         Scene scene = new Scene(raiz, 400, 560);
-
-        // Configurações da janela
-        stage.setTitle("Robô Game — PET Computação UECE");
+        stage.setTitle("Robô Game — P00 UECE");
         stage.setScene(scene);
-
         stage.setMinWidth(400);
         stage.setMinHeight(560);
-
         stage.centerOnScreen();
-
         stage.show();
     }
 
