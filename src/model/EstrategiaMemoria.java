@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class EstrategiaMemoria {
+public class EstrategiaMemoria implements EstrategiaMovimento {
+
     private final Random random = new Random();
     private final List<String> visitadas  = new ArrayList<>(); // "x,y"
     private final List<String> bloqueadas = new ArrayList<>(); // "x,y"

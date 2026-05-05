@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class EstrategiaEstrategica {
+public class EstrategiaEstrategica implements EstrategiaMovimento {
+
     private final Random random = new Random();
 
     @Override
@@ -37,7 +38,6 @@ public class EstrategiaEstrategica {
         }
 
         // Se nenhuma direção melhora (não deveria acontecer
-        // num tabuleiro livre), sorteia entre as válidas
         if (melhores.isEmpty()) {
             List<String> validas = new ArrayList<>(Arrays.asList(direcoes));
             validas.removeIf(d -> {
@@ -51,5 +51,4 @@ public class EstrategiaEstrategica {
         // Se houver empate, sorteia entre as melhores
         return melhores.get(random.nextInt(melhores.size()));
     }
-
 }

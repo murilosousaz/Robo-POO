@@ -2,7 +2,8 @@ package model;
 
 import java.util.Random;
 
-public class EstrategiaAleatoria {
+public class EstrategiaAleatoria implements EstrategiaMovimento {
+
     private final Random random = new Random();
     private String ultimaDirecaoInvalida = null;
 
@@ -23,5 +24,4 @@ public class EstrategiaAleatoria {
     public void registrarInvalida(String direcao) {
         this.ultimaDirecaoInvalida = direcao;
     }
-
 }

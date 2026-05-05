@@ -24,6 +24,7 @@ public class Robo {
         this.estrategia = estrategia;
     }
 
+    // Troca de estratégia em tempo de execução
     public void setEstrategia(EstrategiaMovimento estrategia) {
         this.estrategia = estrategia;
     }
